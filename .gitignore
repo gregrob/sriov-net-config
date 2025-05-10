@@ -1,0 +1,3 @@
+# ignore the content of the config directory except the example file
+config/*
+!config/sriov-net.config.example
