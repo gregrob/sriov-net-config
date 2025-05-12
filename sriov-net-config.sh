@@ -204,6 +204,7 @@ for key in "${!pf_config[@]}"; do
 done
 log DEBUG ""
 
+log INFO "Starting SR-IOV configuration"
 
 if [[ "$CONFIG_REPORT" == "true" ]]; then
     # If CONFIG_REPORT is not set, show the detailed configuration breakdown
