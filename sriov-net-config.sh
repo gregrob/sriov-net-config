@@ -14,6 +14,7 @@ LOG_DEBUG=false
 
 DRY_RUN=false
 SPECIFIC_VF=""
+PCI_REPORT=false
 CONFIG_REPORT=false
 
 # -------------------------------------------------------------------
@@ -100,6 +101,11 @@ parse_args() {
                 shift
                 ;;
 
+            --pci-report)
+                PCI_REPORT=true
+                shift
+                ;;
+
             --config-report)
                 CONFIG_REPORT=true
                 shift
@@ -115,6 +121,7 @@ parse_args() {
                 echo "  --host <hostname> : Override the hostname (e.g., --host myhost)"
                 echo "  --verbose         : Enable debug output"
                 echo "  --dry-run         : Run in dry-run mode (no changes will be made)"
+                echo "  --pci-report      : Display a detailed PCI configuration report"
                 echo "  --config-report   : Show detailed configuration report"
                 echo "  --help            : Show this help message"
                 exit 0
@@ -125,6 +132,63 @@ parse_args() {
                 ;;
         esac
     done
+
+}
+
+# -------------------------------------------------------------------
+# detailed_pci_report
+#
+# Generates and logs a detailed PCI configuration report.
+# The report includes the VF label, PCI slot name, and IOMMU group
+# for each Virtual Function (VF) defined in the configuration.
+#
+# Output:
+#   - Logs a formatted table with aligned columns for VF Label,
+#     PCI Slot Name, and IOMMU Group.
+#
+# Dependencies:
+#   - Requires the `vf_config` associative array to be populated.
+#   - Uses helper functions `make_vf_label` and `get_net_pcie_slot_name`.
+#
+# Usage:
+#   detailed_pci_report
+# -------------------------------------------------------------------
+detailed_pci_report() {
+    local col_width=20  # Define a single column width for all elements
+    local header
+
+    log INFO "=== PCI Configuration Report ==="
+    
+    # Header row    
+    header=$(printf "%-${col_width}s %-${col_width}s %-${col_width}s" "VF Label" "PCI Slot Name" "IOMMU Group")
+    log INFO "$header"
+    log INFO "$(printf "%-${col_width}s %-${col_width}s %-${col_width}s" "--------" "--------------" "-----------")"
+
+    for key in "${!vf_config[@]}"; do
+        local vf_label
+        local pci_slot_name
+        local iommu_group
+        
+        # Parse the VF configuration
+        IFS=' ' read -r dev vf_idx vlan activate rename driver comment <<< "${vf_config[$key]}"
+        
+        # Generate VF label and PCI slot name
+        make_vf_label "$dev" "$vf_idx" vf_label
+        get_net_pcie_slot_name "$dev" "$vf_idx" pci_slot_name
+
+        # Determine the IOMMU group
+        if [[ -n "$pci_slot_name" ]]; then
+            iommu_group=$(readlink -f "/sys/bus/pci/devices/$pci_slot_name/iommu_group" | awk -F'/' '{print $NF}')
+        else
+            iommu_group="N/A"
+        fi
+
+        # Print the report using the log function
+        log INFO "$(printf "%-${col_width}s %-${col_width}s %-${col_width}s" "$vf_label" "$pci_slot_name" "$iommu_group")"
+
+    done
+
+    log INFO
 
 }
 
@@ -206,8 +270,12 @@ log DEBUG ""
 
 log INFO "Starting SR-IOV configuration"
 
-if [[ "$CONFIG_REPORT" == "true" ]]; then
-    # If CONFIG_REPORT is not set, show the detailed configuration breakdown
+if [[ "$PCI_REPORT" == "true" ]]; then
+    # If PCI_REPORT is enabled, show the detailed pci configuration
+    detailed_pci_report
+
+elif [[ "$CONFIG_REPORT" == "true" ]]; then
+    # If CONFIG_REPORT is enabled, show the detailed configuration breakdown
     detailed_config_breakdown_report
 
 elif [[ -z "$SPECIFIC_VF" ]]; then
