@@ -1,0 +1,12 @@
+[Unit]
+Description=Script to enable and set-up SR-IOV for net devices on boot
+Before=network-online.target network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/sriov-net-config.sh
+
+[Install]
+WantedBy=multi-user.target

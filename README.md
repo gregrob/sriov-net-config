@@ -145,6 +145,40 @@ In this example:
 - The VF is bound to the `iavf` driver.
 - The comment explains the purpose of the configuration.
 
+## Automatically Loading the Configuration at Boot
+
+The `/sriov-net-config.service` file is provided to enable the configuration script to run automatically at boot using `systemd`. Since the `sriov-net-config` tool can be stored in various locations (e.g., `/usr/local`, `/srv`, etc.), you need to create a symlink to standardise its location before enabling the service.
+
+### Steps to Enable the Service
+
+1. **Create a symbolic link to the configuration script**:
+   Standardise the script's location by creating a symlink under `/usr/local/bin/`:
+   ```bash
+   sudo ln -s [script folder]/sriov-net-config.sh /usr/local/bin/sriov-net-config.sh
+   ```
+
+2. **Create a symbolic link to the `.service` file**:
+   Link the service file to `/etc/systemd/system/`:
+   ```bash
+   sudo ln -s [script folder]/sriov-net-config.service /etc/systemd/system/sriov-net-config.service
+   ```
+
+3. **Enable the service**:
+   Enable the service to run at boot:
+   ```bash
+   sudo systemctl enable sriov-net-config
+   ```
+
+4. **Start the service**:
+   Start the service manually (optional):
+   ```bash
+   sudo systemctl start sriov-net-config
+   ```
+
+### Notes
+- Ensure the script and service file paths are correct when creating the symlinks.
+- Use `sudo systemctl status sriov-net-config` to check the status of the service after enabling or starting it.
+
 ## PCI Report
 
 The PCI report provides detailed information about the Virtual Functions (VFs) configured in the system. This report can be used to confirm the correct network device mapping in Proxmox or other virtualization platforms. It includes:
