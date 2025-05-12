@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------
 # Configuration
 # -------------------------------------------------------------------
-BASE_DIR="$(dirname "${BASH_SOURCE[0]}")"
+BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 CONFIG_DIR="$BASE_DIR/config"
 UTILS_DIR="$BASE_DIR/utils"
 LIB_DIR="$BASE_DIR/lib"
