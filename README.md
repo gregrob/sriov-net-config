@@ -12,6 +12,7 @@ This tool was initially developed to efficiently manage network Virtual Function
 - **VF Configuration**: Configure VLANs, activate/deactivate VFs, rename VF interfaces, and bind them to specific drivers.
 - **PF Configuration**: Create and manage VFs for PFs, assign MAC addresses, and handle SR-IOV autoprobe settings.
 - **Dry-Run Mode**: Simulate changes without applying them to the system.
+- **PCI Report**: Generate a detailed PCI configuration report, including VF labels, PCI slot names, and IOMMU groups.
 - **Detailed Configuration Reports**: Generate detailed breakdowns of parsed configurations for diagnostics.
 
 ## Getting Started
@@ -52,6 +53,7 @@ sriov-net-config.sh [options]
 - `--host <hostname>`: Override the hostname for host-specific configurations.
 - `--verbose`: Enable debug output.
 - `--dry-run`: Simulate changes without applying them.
+- `--pci-report`: Display a detailed PCI configuration report, including VF labels, PCI slot names, and IOMMU groups.
 - `--config-report`: Show a detailed configuration report.
 - `--help`: Display usage information.
 
@@ -75,11 +77,18 @@ To configure a specific VF:
 sudo sriov-net-config.sh --vf enlan3 2
 ```
 
+To generate a detailed PCI configuration report:
+```bash
+sudo sriov-net-config.sh --pci-report
+```
+
 ## Configuration File Format
 
 The configuration file supports two sections: `all:` for global settings and `<hostname>:` for host-specific overrides.
 
 When a configuration is specified in both the `all:` section and the `<hostname>:` section, the settings in the `<hostname>:` section will take precedence.
+
+For a complete example, see the [example configuration file](config/sriov-net.config.example).
 
 ### Physical Function (PF) Configuration
 
@@ -135,6 +144,25 @@ In this example:
 - The VF is activated (`true`) and renamed (`true`).
 - The VF is bound to the `iavf` driver.
 - The comment explains the purpose of the configuration.
+
+## PCI Report
+
+The PCI report provides detailed information about the Virtual Functions (VFs) configured in the system. This can be used to confirm the correct network device mapping in Proxmox. It includes:
+- **VF Label**: A human-readable label for the VF.
+- **PCI Slot Name**: The PCI slot name of the VF.
+- **IOMMU Group**: The IOMMU group to which the VF belongs.
+
+To generate the PCI report, use the `--pci-report` option.
+
+#### Example Output
+```
+=== PCI Configuration Report ===
+VF Label                 PCI Slot Name            IOMMU Group         
+--------                 --------------           -----------         
+enlan3vf1                0000:03:00.1             12                 
+enlan3vf2                0000:03:00.2             12                  
+enlan3vf3                0000:03:00.3             13                  
+```
 
 ## Further Reading
 
