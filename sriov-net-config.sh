@@ -138,31 +138,46 @@ parse_args() {
 # -------------------------------------------------------------------
 # detailed_pci_report
 #
-# Generates and logs a detailed PCI configuration report.
-# The report includes the VF label, PCI slot name, and IOMMU group
-# for each Virtual Function (VF) defined in the configuration.
+# Description:
+#   Generates and logs a detailed PCI configuration report.
+#   The report includes the VF label, PCI slot name, and IOMMU group
+#   for each Virtual Function (VF) defined in the configuration.
 #
 # Output:
-#   - Logs a formatted table with aligned columns for VF Label,
-#     PCI Slot Name, and IOMMU Group.
+#   - Logs a formatted table with aligned columns for:
+#       - VF Label: A human-readable label for the VF.
+#       - PCI Slot Name: The PCI slot name of the VF.
+#       - IOMMU Group: The IOMMU group to which the VF belongs.
+#       - Comments: Any additional comments from the configuration.
 #
 # Dependencies:
 #   - Requires the `vf_config` associative array to be populated.
-#   - Uses helper functions `make_vf_label` and `get_net_pcie_slot_name`.
+#   - Uses helper functions:
+#       - `make_vf_label`: Generates a label for the VF.
+#       - `get_net_pcie_slot_name`: Retrieves the PCI slot name for the VF.
 #
 # Usage:
 #   detailed_pci_report
+#
+# Notes:
+#   - Ensure the script is run with sufficient permissions to access
+#     `/sys/bus/pci` for retrieving IOMMU group information.
 # -------------------------------------------------------------------
 detailed_pci_report() {
-    local col_width=20  # Define a single column width for all elements
     local header
+
+    local col_width_vf=15
+    local col_width_pci=15
+    local col_width_iommu=13
+    local col_width_comment=50
+    local line_format="%-${col_width_vf}s %-${col_width_pci}s %-${col_width_iommu}s %-${col_width_comment}s"
 
     log INFO "=== PCI Configuration Report ==="
     
     # Header row    
-    header=$(printf "%-${col_width}s %-${col_width}s %-${col_width}s" "VF Label" "PCI Slot Name" "IOMMU Group")
+    header=$(printf "$line_format" "VF Label" "PCI Slot Name" "IOMMU Group" "Comments")
     log INFO "$header"
-    log INFO "$(printf "%-${col_width}s %-${col_width}s %-${col_width}s" "--------" "--------------" "-----------")"
+    log INFO "$(printf "$line_format" "---------" "--------------" "------------" "---------")"
 
     for key in "${!vf_config[@]}"; do
         local vf_label
@@ -184,7 +199,7 @@ detailed_pci_report() {
         fi
 
         # Print the report using the log function
-        log INFO "$(printf "%-${col_width}s %-${col_width}s %-${col_width}s" "$vf_label" "$pci_slot_name" "$iommu_group")"
+        log INFO "$(printf "$line_format" "$vf_label" "$pci_slot_name" "$iommu_group" "$comment")"
 
     done
 
@@ -268,7 +283,7 @@ for key in "${!pf_config[@]}"; do
 done
 log DEBUG ""
 
-log INFO "Starting SR-IOV configuration"
+log INFO "=== Starting SR-IOV configuration ==="
 
 if [[ "$PCI_REPORT" == "true" ]]; then
     # If PCI_REPORT is enabled, show the detailed pci configuration
@@ -303,4 +318,4 @@ else
     unset VF_LABEL
 fi
 
-log INFO "All done! SR-IOV configuration completed successfully"
+log INFO "=== All done! SR-IOV configuration completed successfully ==="

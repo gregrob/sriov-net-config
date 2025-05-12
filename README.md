@@ -147,22 +147,27 @@ In this example:
 
 ## PCI Report
 
-The PCI report provides detailed information about the Virtual Functions (VFs) configured in the system. This can be used to confirm the correct network device mapping in Proxmox. It includes:
+The PCI report provides detailed information about the Virtual Functions (VFs) configured in the system. This report can be used to confirm the correct network device mapping in Proxmox or other virtualization platforms. It includes:
 - **VF Label**: A human-readable label for the VF.
 - **PCI Slot Name**: The PCI slot name of the VF.
 - **IOMMU Group**: The IOMMU group to which the VF belongs.
+- **Comments**: Any additional comments from the configuration file.
 
 To generate the PCI report, use the `--pci-report` option.
 
-#### Example Output
+### Example Output
 ```
 === PCI Configuration Report ===
-VF Label                 PCI Slot Name            IOMMU Group         
---------                 --------------           -----------         
-enlan3vf1                0000:03:00.1             12                 
-enlan3vf2                0000:03:00.2             12                  
-enlan3vf3                0000:03:00.3             13                  
+VF Label            PCI Slot Name       IOMMU Group      Comments
+---------           --------------      ------------     --------
+enlan3vf1           0000:03:00.1        12               # VLAN 100
+enlan3vf2           0000:03:00.2        12               # VLAN 200
+enlan3vf3           0000:03:00.3        13               # VLAN 300
 ```
+
+### Notes
+- Ensure the script is run with sufficient permissions (e.g., `sudo`) to access `/sys/bus/pci` for retrieving PCI and IOMMU group information.
+- The `Comments` column reflects any additional information provided in the configuration file for each VF.
 
 ## Further Reading
 
