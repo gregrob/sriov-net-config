@@ -1,0 +1,41 @@
+# sriov-net configuration
+#
+# Physical Function (PF) Format: pf <dev> <num_vfs> <mac_prefix> [# comment]
+#   - <dev>: The name of the Physical Function (PF) network device (e.g. enlan3).
+#   - <num_vfs>: The number of Virtual Functions (VFs) to create on the specified PF.
+#   - <mac_prefix>: The MAC address prefix to assign to the VFs. The last octets will be incremented automatically for each VF.
+#   - [# comment]: Optional comment to describe the configuration or its purpose.
+#
+# Virtual Function (VF) Format: vf <dev> <vf_idx> <vlan> <activate> <rename> <driver> [# comment]
+#   - <dev>: The name of the Virtual Function's (VF) parent Physical Function (PF) network device (e.g. enlan3).
+#   - <vf_idx>: The index of the VF to configure (e.g., 1 for VF 1).
+#   - <vlan>: The VLAN ID to assign to the VF (e.g., 0 for no VLAN or 100 for VLAN 100).
+#   - <activate>: A boolean value (true or false) to activate or deactivate the VF.
+#   - <rename>: A boolean value (true or false) to rename the VF interface for easier identification.
+#   - <driver>: The driver to bind the VF to (e.g., iavf for Intel VFs).
+#   - [# comment]: Optional comment to describe the configuration or its purpose.
+
+# Global settings (apply to all hosts)
+all:
+    vf enlan2  1     8     true      true     iavf   # Assign VLAN 8 to VF 1 on enlan2 for ct-001, rename and activate
+    vf enlan3  1     0     true      true     iavf   # Assign VLAN 0 to VF 1 on enlan3 for ct-002, rename and activate
+    vf enlan3  30    0     false     false    iavf   # Assign VLAN 0 to VF 30 on enlan3 for vm-001
+    vf enlan3  31    2     false     false    iavf   # Assign VLAN 2 to VF 31 on enlan3 for vm-002
+
+# Host-specific settings for host-001 (applied only to a specific host)
+host-001:
+    pf enlan2  32    58:47:ca:00:00:00               # Create 32 VFs on enlan2 with MACs starting from 00
+    pf enlan3  32    58:47:ca:00:00:20               # Create 32 VFs on enlan3 with MACs starting from 20
+
+    vf enlan3  29    2     false     false    iavf   # Assign VLAN 2 to VF 29 on enlan3 for vm-003   
+    vf enlan3  31    200   false     false    iavf   # Assign VLAN 200 to VF 31 on enlan3 for vm-002 (overrides entry in all section)
+
+# Host-specific settings for host-002 (applied only to a specific host)
+host-002:
+    pf enlan2  32    58:47:ca:00:02:00               # Create 32 VFs on enlan2 with MACs starting from 02:00
+    pf enlan3  32    58:47:ca:00:03:e0               # Create 32 VFs on enlan3 with MACs starting from 03:e0
+
+    vf enlan3  31    300   false     false    iavf   # Assign VLAN 300 to VF 31 on enlan3 for vm-002 (overrides entry in all section)
+
+# Host-specific settings for host-003 (applied only to a specific host)
+host-003:
